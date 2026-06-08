@@ -1,0 +1,196 @@
+- name: Install MySQL server
+  apt:
+    name:
+      - mysql-server
+      - python3-mysqldb
+    state: present
+    
+- name: Start and enable MySQL
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Set MySQL root password
+  shell: |
+    mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '{{ mysql_root_password }}';"
+  ignore_errors: yes
+
+- name: Create databases and users
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' -e "
+    CREATE DATABASE IF NOT EXISTS grafana;
+    CREATE DATABASE IF NOT EXISTS dive_logs;
+    CREATE DATABASE IF NOT EXISTS bluewater_internal;
+    CREATE USER IF NOT EXISTS 'grafana_user'@'localhost' IDENTIFIED BY '{{ grafana_db_password }}';
+    CREATE USER IF NOT EXISTS 'portal_user'@'localhost' IDENTIFIED BY '{{ portal_db_password }}';"
+  ignore_errors: yes
+  
+- name: Create dive_logs tables
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' dive_logs -e "
+    CREATE TABLE IF NOT EXISTS dive_records (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      dive_id INT,
+      diver_name VARCHAR(100),
+      certification VARCHAR(10),
+      max_depth_m FLOAT,
+      bottom_time_min INT,
+      safety_stop_min INT,
+      tank_start_bar INT,
+      tank_end_bar INT,
+      incident_flag TINYINT(1),
+      incident_notes TEXT,
+      date DATE
+    );
+    CREATE TABLE IF NOT EXISTS dive_summary (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      dive_id INT,
+      divemaster_name VARCHAR(100),
+      num_customers INT,
+      incident_flag TINYINT(1),
+      date DATE
+    );"
+  ignore_errors: yes
+  
+- name: Populate archived dive_records (falsified)
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' dive_logs -e "
+    INSERT IGNORE INTO dive_records (dive_id, diver_name, certification, max_depth_m, bottom_time_min, safety_stop_min, tank_start_bar, tank_end_bar, incident_flag, incident_notes, date) VALUES
+    (1, 'Jana Mueller', 'OW', 17.2, 48, 3, 200, 68, 0, NULL, '2024-06-03'),
+    (1, 'Reza Tehrani', 'AOW', 17.8, 48, 3, 210, 72, 0, NULL, '2024-06-03'),
+    (1, 'Ana Costa', 'AOW', 16.5, 48, 3, 195, 65, 0, NULL, '2024-06-03'),
+    (1, 'Lena Park', 'OW', 15.9, 48, 3, 200, 70, 0, NULL, '2024-06-03'),
+    (2, 'Felix Wagner', 'AOW', 17.5, 42, 3, 210, 75, 0, NULL, '2024-06-05'),
+    (2, 'Chloe Dubois', 'OW', 16.2, 42, 3, 205, 68, 0, NULL, '2024-06-05'),
+    (2, 'Omar Hassan', 'AOW', 17.9, 42, 3, 215, 80, 0, NULL, '2024-06-05'),
+    (3, 'Jana Mueller', 'OW', 16.8, 50, 3, 200, 65, 0, NULL, '2024-06-10'),
+    (3, 'Iris Novak', 'OW', 17.1, 50, 3, 195, 68, 0, NULL, '2024-06-10'),
+    (3, 'Reza Tehrani', 'AOW', 18.2, 50, 3, 210, 70, 0, NULL, '2024-06-10'),
+    (3, 'Ana Costa', 'AOW', 17.5, 50, 3, 205, 72, 0, NULL, '2024-06-10'),
+    (4, 'Lena Park', 'OW', 16.2, 44, 3, 200, 62, 0, NULL, '2024-06-14'),
+    (4, 'Felix Wagner', 'AOW', 17.4, 44, 3, 220, 75, 0, NULL, '2024-06-14'),
+    (4, 'Chloe Dubois', 'OW', 15.9, 44, 3, 205, 68, 0, NULL, '2024-06-14'),
+    (5, 'Omar Hassan', 'AOW', 18.0, 36, 3, 215, 65, 0, NULL, '2024-06-18'),
+    (5, 'Iris Novak', 'OW', 16.5, 36, 3, 200, 60, 0, NULL, '2024-06-18'),
+    (5, 'Jana Mueller', 'OW', 15.8, 36, 3, 195, 58, 0, NULL, '2024-06-18'),
+    (5, 'Reza Tehrani', 'AOW', 18.1, 36, 3, 210, 70, 0, NULL, '2024-06-18'),
+    (6, 'Ana Costa', 'AOW', 18.0, 52, 3, 205, 68, 0, NULL, '2024-06-22'),
+    (6, 'Lena Park', 'OW', 16.4, 52, 3, 200, 72, 0, NULL, '2024-06-22'),
+    (6, 'Felix Wagner', 'AOW', 17.9, 52, 3, 210, 75, 0, NULL, '2024-06-22');"
+  ignore_errors: yes
+  
+- name: Populate archived dive_summary (all incidents wiped)
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' dive_logs -e "
+    INSERT IGNORE INTO dive_summary (dive_id, divemaster_name, num_customers, incident_flag, date) VALUES
+    (1, 'Marcus Reyes', 4, 0, '2024-06-03'),
+    (2, 'Sophie Andersen', 3, 0, '2024-06-05'),
+    (3, 'Marcus Reyes', 4, 0, '2024-06-10'),
+    (4, 'Tom Brauer', 3, 0, '2024-06-14'),
+    (5, 'Sophie Andersen', 4, 0, '2024-06-18'),
+    (6, 'Tom Brauer', 3, 0, '2024-06-22');"
+  ignore_errors: yes
+
+- name: Create bluewater_internal tables
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' bluewater_internal -e "
+    CREATE TABLE IF NOT EXISTS dive_records (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      dive_id INT,
+      diver_name VARCHAR(100),
+      certification VARCHAR(10),
+      max_depth_m FLOAT,
+      bottom_time_min INT,
+      safety_stop_min INT,
+      tank_start_bar INT,
+      tank_end_bar INT,
+      incident_flag TINYINT(1),
+      incident_notes TEXT,
+      date DATE
+    );
+    CREATE TABLE IF NOT EXISTS dive_summary (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      dive_id INT,
+      divemaster_name VARCHAR(100),
+      num_customers INT,
+      incident_flag TINYINT(1),
+      date DATE
+    );
+    CREATE TABLE IF NOT EXISTS staff (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      username VARCHAR(50),
+      password VARCHAR(100),
+      role VARCHAR(50),
+      ssh_password VARCHAR(100)
+    );"
+  ignore_errors: yes
+
+- name: Populate real dive_records
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' bluewater_internal -e "
+    INSERT IGNORE INTO dive_records (dive_id, diver_name, certification, max_depth_m, bottom_time_min, safety_stop_min, tank_start_bar, tank_end_bar, incident_flag, incident_notes, date) VALUES
+    (1, 'Jana Mueller', 'OW', 17.2, 48, 3, 200, 68, 0, NULL, '2024-06-03'),
+    (1, 'Reza Tehrani', 'AOW', 17.8, 48, 3, 210, 72, 0, NULL, '2024-06-03'),
+    (1, 'Ana Costa', 'AOW', 16.5, 48, 3, 195, 65, 0, NULL, '2024-06-03'),
+    (1, 'Lena Park', 'OW', 15.9, 48, 3, 200, 70, 0, NULL, '2024-06-03'),
+    (2, 'Felix Wagner', 'AOW', 28.4, 42, 3, 210, 75, 0, NULL, '2024-06-05'),
+    (2, 'Chloe Dubois', 'OW', 24.1, 42, 0, 205, 60, 1, 'OW diver exceeded certification depth limit of 18m. Safety stop skipped due to low air.', '2024-06-05'),
+    (2, 'Omar Hassan', 'AOW', 27.9, 42, 3, 215, 80, 0, NULL, '2024-06-05'),
+    (3, 'Jana Mueller', 'OW', 16.8, 50, 3, 200, 65, 0, NULL, '2024-06-10'),
+    (3, 'Iris Novak', 'OW', 17.1, 50, 3, 195, 68, 0, NULL, '2024-06-10'),
+    (3, 'Reza Tehrani', 'AOW', 18.2, 50, 3, 210, 70, 0, NULL, '2024-06-10'),
+    (3, 'Ana Costa', 'AOW', 17.5, 50, 3, 205, 72, 0, NULL, '2024-06-10'),
+    (4, 'Lena Park', 'OW', 16.2, 44, 3, 200, 62, 0, NULL, '2024-06-14'),
+    (4, 'Felix Wagner', 'AOW', 29.7, 38, 0, 220, 18, 1, 'Diver surfaced with 18 bar remaining. Safety stop skipped. Near out-of-air incident.', '2024-06-14'),
+    (4, 'Chloe Dubois', 'OW', 17.8, 44, 3, 205, 0, 1, 'DIVER SEPARATED FROM GROUP. Diver surfaced independently. Tank empty on recovery. Emergency ascent confirmed.', '2024-06-14'),
+    (5, 'Omar Hassan', 'AOW', 31.4, 36, 0, 215, 55, 1, 'Exceeded AOW depth limit of 30m. Safety stop not performed.', '2024-06-18'),
+    (5, 'Iris Novak', 'OW', 22.6, 36, 0, 200, 58, 1, 'OW diver exceeded 18m certification limit. No safety stop recorded.', '2024-06-18'),
+    (5, 'Jana Mueller', 'OW', 19.8, 36, 0, 195, 52, 1, 'OW diver exceeded 18m certification limit. Safety stop skipped.', '2024-06-18'),
+    (5, 'Reza Tehrani', 'AOW', 28.1, 36, 3, 210, 70, 0, NULL, '2024-06-18'),
+    (6, 'Ana Costa', 'AOW', 18.0, 52, 3, 205, 68, 0, NULL, '2024-06-22'),
+    (6, 'Lena Park', 'OW', 16.4, 52, 3, 200, 72, 0, NULL, '2024-06-22'),
+    (6, 'Felix Wagner', 'AOW', 17.9, 52, 3, 210, 75, 0, NULL, '2024-06-22');"
+  ignore_errors: yes
+  
+- name: Populate real dive_summary
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' bluewater_internal -e "
+    INSERT IGNORE INTO dive_summary (dive_id, divemaster_name, num_customers, incident_flag, date) VALUES
+    (1, 'Marcus Reyes', 4, 0, '2024-06-03'),
+    (2, 'Sophie Andersen', 3, 1, '2024-06-05'),
+    (3, 'Marcus Reyes', 4, 0, '2024-06-10'),
+    (4, 'Tom Brauer', 3, 1, '2024-06-14'),
+    (5, 'Sophie Andersen', 4, 1, '2024-06-18'),
+    (6, 'Tom Brauer', 3, 0, '2024-06-22');"
+  ignore_errors: yes
+  
+# INTENTIONAL: bluewater_internal contains real incident records
+# dive_logs contains falsified versions with incidents scrubbed
+# This contrast is what sync_logs.py exploits to produce the root flag
+# Do NOT sync or modify bluewater_internal data
+
+
+- name: Populate staff table
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' bluewater_internal -e "
+    INSERT IGNORE INTO staff (username, password, role, ssh_password) VALUES
+    ('admin', 'BlueWater2023!', 'manager', NULL),
+    ('{{ divemaster_name }}', '{{ divemaster_password }}', 'divemaster', '{{ divemaster_password }}'),
+    ('intern', 'intern2024', 'intern', NULL);"
+  ignore_errors: yes
+# INTENTIONAL: staff table stores divemaster SSH password in plaintext
+# This is recovered via SQL injection on port 8080 (CWE-89)
+# Do NOT hash the ssh_password column
+
+- name: Grant DB permissions
+  shell: |
+    mysql -u root -p'{{ mysql_root_password }}' -e "
+    GRANT ALL PRIVILEGES ON grafana.* TO 'grafana_user'@'localhost';
+    GRANT SELECT ON dive_logs.* TO 'grafana_user'@'localhost';
+    GRANT ALL PRIVILEGES ON bluewater_internal.* TO 'portal_user'@'localhost';
+    FLUSH PRIVILEGES;"
+  
+- name: Pin MySQL version to prevent auto-upgrade
+  shell: apt-mark hold mysql-server
+  ignore_errors: yes

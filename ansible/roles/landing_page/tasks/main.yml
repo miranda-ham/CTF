@@ -1,0 +1,111 @@
+- name: Install Apache and PHP
+  apt:
+    name:
+      - apache2
+      - php
+      - php-mysql
+      - php-curl
+      - php-gd
+      - php-mbstring
+      - php-xml
+      - libapache2-mod-php
+    state: present
+
+- name: Start and enable Apache
+  systemd:
+    name: apache2
+    state: started
+    enabled: yes
+
+- name: Create uploads directory
+  file:
+    path: /var/www/html/uploads
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+- name: Deploy homepage
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+
+- name: Deploy customer review and photo upload page (VULNERABLE - CWE-434)
+  template:
+    src: reviews.php.j2
+    dest: /var/www/html/reviews.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  # INTENTIONAL VULNERABILITY: CWE-434 Unrestricted File Upload
+  # JavaScript validates file extension client-side only
+  # PHP performs NO server-side validation
+  # Bypass: curl upload of shell.php.jpg bypasses JS check entirely
+  # Do NOT add server-side file type or content validation
+      
+- name: Deploy booking form page
+  template:
+    src: booking.php.j2
+    dest: /var/www/html/booking.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  # RABBIT HOLE: booking form reflects user input but has no database backend
+  # Looks like it might be vulnerable to SQLi but no query is ever executed
+  # Do NOT add database connectivity to this page
+
+- name: Configure Apache to execute PHP in uploads directory
+  copy:
+    dest: /etc/apache2/conf-available/uploads-php.conf
+    content: |
+      <Directory /var/www/html/uploads>
+          Options FollowSymLinks
+          AllowOverride None
+          Require all granted
+          <FilesMatch ".+\.php\.">
+              SetHandler application/x-httpd-php
+          </FilesMatch>
+          <FilesMatch "\.php\.">
+              SetHandler application/x-httpd-php
+          </FilesMatch>
+          AddType application/x-httpd-php .php .jpg .jpeg .png .gif
+      </Directory>
+  notify: restart apache2
+  # INTENTIONAL: Apache executes PHP in all files including .jpg uploads
+  # Required for double-extension webshell (shell.php.jpg) to execute
+  # Do NOT remove AddType or FilesMatch directives
+
+
+- name: Drop admin notes file with shopowner credentials
+  copy:
+    dest: /var/www/html/admin_notes.txt
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    content: |
+      BlueWater Dive Shop - Admin Notes
+      Last updated: 14/03/2023
+
+      Staff portal moved to port 8080 - remind divers to use new link
+
+      Owner login (server access for file uploads):
+      user: shopowner
+      pass: BlueWater2019!
+
+      TODO: ask IT to set up proper key-based login instead
+  # RABBIT HOLE: file is web-accessible and readable via webshell
+  # Credentials lead to nologin account - dead end
+  # Do NOT remove this file or change the password to a valid shell account
+
+- name: Enable uploads PHP config
+  shell: a2enconf uploads-php
+  notify: restart apache2
+
+
+- name: Pin Apache version to prevent auto-upgrade
+  shell: apt-mark hold apache2
+  ignore_errors: yes

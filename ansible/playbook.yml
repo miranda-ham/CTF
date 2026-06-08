@@ -1,0 +1,22 @@
+---
+# DevDrop CTF Provisioning Playbook
+# This playbook provisions the complete DevDrop challenge
+- name: Provision DeepDive CTF Machine
+  hosts: all
+  become: yes # Run tasks as root (sudo)
+
+# Variables (overridden by Vagrantfile extra_vars)
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+# Execute roles in order
+  roles:
+    - base # Base OS configuration
+    - users # Create user accounts, configure sudo
+    - mysql
+    - landing_page
+    - staff_portal
+    - grafana
+    - wordpress_rh
+    - flags # Place flags in /home/devuser and /root
+    - harden # "Secure Everything Else" - firewall, service hardening
+# - elastic # Elastic Agent (added in Chapter 8)

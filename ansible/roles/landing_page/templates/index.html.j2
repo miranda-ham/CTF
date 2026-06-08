@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueWater Dive Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0a2342;
+      --ocean:   #1a5f7a;
+      --aqua:    #2196b0;
+      --foam:    #e8f4f8;
+      --sand:    #f5f0e8;
+      --coral:   #e07b54;
+      --white:   #ffffff;
+      --text:    #1c2a38;
+      --muted:   #5a6e7f;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      height: 68px;
+      background: rgba(10, 35, 66, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-logo span { color: #5ec8e0; }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #5ec8e0; }
+
+    .nav-cta {
+      background: var(--coral);
+      color: var(--white) !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: 4px;
+      font-weight: 500 !important;
+    }
+
+    .nav-cta:hover { background: #c96840; color: var(--white) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 8rem 3rem 5rem;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0a2342 0%, #0d3d5c 45%, #1a5f7a 100%);
+      gap: 3rem;
+    }
+
+    .hero-text {
+      min-width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .hero-seal {
+      flex-shrink: 0;
+      width: 400px;
+      opacity: 0.97;
+      margin: auto;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: rgba(94, 200, 224, 0.15);
+      border: 1px solid rgba(94, 200, 224, 0.4);
+      color: #5ec8e0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 2px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      color: var(--white);
+      line-height: 1.1;
+      max-width: 800px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: #5ec8e0;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.7);
+      max-width: 600px;
+      margin-bottom: 2rem;
+      font-weight: 300;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.75rem;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--coral);
+      color: var(--white);
+    }
+
+    .btn-primary:hover { background: #c96840; transform: translateY(-1px); }
+
+    .btn-outline {
+      border: 1.5px solid rgba(255,255,255,0.4);
+      color: var(--white);
+    }
+
+    .btn-outline:hover {
+      border-color: #5ec8e0;
+      color: #5ec8e0;
+      background: rgba(94,200,224,0.08);
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .stat {
+      color: var(--white);
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 0.25rem;
+    }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 5rem 3rem; }
+
+    .section-tag {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 0.75rem;
+    }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.5rem);
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      color: var(--muted);
+      max-width: 540px;
+      margin-bottom: 3rem;
+    }
+
+    /* ── SERVICES ── */
+    .services { background: var(--sand); }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .service-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 2rem 1.75rem;
+      border-bottom: 3px solid transparent;
+      transition: border-color 0.25s, transform 0.2s;
+    }
+
+    .service-card:hover {
+      border-bottom-color: var(--aqua);
+      transform: translateY(-3px);
+    }
+
+    .service-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .service-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .service-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── ABOUT STRIP ── */
+    .about-strip {
+      background: var(--navy);
+      display: flex;
+      gap: 4rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .about-strip .text { flex: 1; min-width: 280px; }
+
+    .about-strip .section-title { color: var(--white); }
+
+    .about-strip .section-sub { color: rgba(255,255,255,0.6); margin-bottom: 2rem; }
+
+    .certs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .cert-badge {
+      background: rgba(94,200,224,0.12);
+      border: 1px solid rgba(94,200,224,0.3);
+      color: #5ec8e0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.3rem 0.75rem;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    .about-strip .img-side {
+      flex: 1;
+      min-width: 260px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .depth-table { width: 100%; border-collapse: collapse; }
+
+    .depth-table th {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #5ec8e0;
+      text-align: left;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .depth-table td {
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.75);
+      padding: 0.6rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .depth-table td:last-child { text-align: right; color: rgba(255,255,255,0.45); }
+
+    /* ── REVIEWS ── */
+    .reviews { background: var(--foam); }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .review-card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 1.75rem;
+      border: 1px solid rgba(26, 95, 122, 0.12);
+    }
+
+    .stars { color: #e8a838; font-size: 0.9rem; margin-bottom: 0.75rem; }
+
+    .review-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+
+    .reviewer {
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: var(--navy);
+    }
+
+    .reviewer span {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .reviews-link {
+      display: inline-block;
+      margin-top: 2rem;
+      color: var(--aqua);
+      font-weight: 500;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .reviews-link:hover { text-decoration: underline; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #061525;
+      color: rgba(255,255,255,0.45);
+      padding: 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.1rem;
+    }
+
+    .footer-logo span { color: #5ec8e0; }
+
+    footer a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+
+    footer a:hover { color: #5ec8e0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">Blue<span>Water</span> Dive Shop</a>
+    <ul class="nav-links">
+      <li><a href="#services">Services</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="/reviews.php">Reviews</a></li>
+      <li><a href="#contact">Contact</a></li>
+      <li><a href="/booking.php" class="nav-cta">Book a Dive</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-text">
+      <div class="hero-badge">PADI &amp; SSI Certified Dive Centre</div>
+      <h1>Explore the <em>Mediterranean</em><br>Below the Surface</h1>
+      <p>Professional dive training, guided excursions, and equipment hire from our base on the Mediterranean coast. Trusted by divers since 2015.</p>
+      <div class="hero-actions">
+        <a href="#services" class="btn btn-primary">Our Services</a>
+        <a href="/reviews.php" class="btn btn-outline">Read Reviews</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-num">1,400+</div>
+          <div class="stat-label">Dives logged</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">A+</div>
+          <div class="stat-label">Regional safety rating</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">4.8★</div>
+          <div class="stat-label">Avg. customer rating</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-seal">
+      <svg width="100%" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          .s-bg { fill: rgba(10,35,66,0.7); }
+          .s-ro { fill: none; stroke: #5ec8e0; stroke-width: 2.5; }
+          .s-ri { fill: none; stroke: rgba(94,200,224,0.35); stroke-width: 1; }
+          .s-rd { fill: none; stroke: rgba(94,200,224,0.5); stroke-width: 1.5; stroke-dasharray: 3 6; }
+          .s-div { stroke: rgba(94,200,224,0.4); stroke-width: 0.75; fill: none; }
+          .s-grade { font-family: 'Playfair Display', Georgia, serif; font-size: 68px; font-weight: 700; fill: #5ec8e0; text-anchor: middle; }
+          .s-top { font-family: 'DM Sans', Arial, sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 3px; fill: rgba(94,200,224,0.85); text-anchor: middle; }
+          .s-mid { font-family: 'Playfair Display', Georgia, serif; font-size: 12.5px; fill: #ffffff; text-anchor: middle; }
+          .s-sm  { font-family: 'DM Sans', Arial, sans-serif; font-size: 8.5px; letter-spacing: 1.5px; fill: rgba(255,255,255,0.45); text-anchor: middle; }
+          .s-star { fill: #5ec8e0; }
+        </style>
+        <circle cx="140" cy="140" r="128" class="s-bg"/>
+        <circle cx="140" cy="140" r="128" class="s-ro"/>
+        <circle cx="140" cy="140" r="118" class="s-rd"/>
+        <circle cx="140" cy="140" r="108" class="s-ri"/>
+        <line x1="52" y1="140" x2="88" y2="140" class="s-div"/>
+        <line x1="192" y1="140" x2="228" y2="140" class="s-div"/>
+        <text x="140" y="86" class="s-top">MEDITERRANEAN</text>
+        <text x="140" y="100" class="s-top">DIVE COUNCIL</text>
+        <text x="140" y="158" class="s-grade">A+</text>
+        <text x="140" y="178" class="s-mid">Safety Rating</text>
+        <text x="140" y="194" class="s-sm">CERTIFIED 2024 · BLUEWATER DIVE SHOP</text>
+        <polygon points="108,207 110,213 116,213 111,217 113,223 108,219 103,223 105,217 100,213 106,213" class="s-star"/>
+        <polygon points="120,207 122,213 128,213 123,217 125,223 120,219 115,223 117,217 112,213 118,213" class="s-star"/>
+        <polygon points="132,207 134,213 140,213 135,217 137,223 132,219 127,223 129,217 124,213 130,213" class="s-star"/>
+        <polygon points="144,207 146,213 152,213 147,217 149,223 144,219 139,223 141,217 136,213 142,213" class="s-star"/>
+        <polygon points="156,207 158,213 164,213 159,217 161,223 156,219 151,223 153,217 148,213 154,213" class="s-star"/>
+        <line x1="72" y1="232" x2="208" y2="232" class="s-div"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section class="services" id="services">
+    <div class="section-tag">What we offer</div>
+    <h2 class="section-title">World-class diving,<br>right at your doorstep</h2>
+    <p class="section-sub">Whether you're a first-time snorkeler or a seasoned technical diver, we have a programme tailored for you.</p>
+
+    <div class="services-grid">
+      <div class="service-card">
+        <div class="service-icon">🤿</div>
+        <h3>Open Water Certification</h3>
+        <p>Get your PADI Open Water Diver certification in just four days. Theory, pool sessions, and four open-water dives included.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🐠</div>
+        <h3>Guided Reef Excursions</h3>
+        <p>Join our expert divemasters on daily reef excursions. Discover Posidonia meadows, sea caves, and local wrecks.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🏊</div>
+        <h3>Advanced &amp; Speciality</h3>
+        <p>Progress to Advanced Open Water, Deep Diver, Night Diver, and more. We run courses year-round for all skill levels.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🧰</div>
+        <h3>Equipment Hire</h3>
+        <p>Full sets of quality-maintained BCD, regulator, wetsuit, tank, and computer available for daily or weekly hire.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">📋</div>
+        <h3>Dive Log Verification</h3>
+        <p>All dives conducted with BlueWater are recorded in our certified log system and signed off by a qualified instructor.</p>
+      </div>
+      <div class="service-card">
+        <div class="service-icon">🚤</div>
+        <h3>Boat Charters</h3>
+        <p>Private and small-group boat dives to offshore sites unavailable from shore. Morning and afternoon departures available.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT STRIP -->
+  <section class="about-strip" id="about">
+    <div class="text">
+      <div class="section-tag" style="color:#5ec8e0;">About us</div>
+      <h2 class="section-title">Safety-first since 2015</h2>
+      <p class="section-sub">BlueWater Dive Shop was founded by a team of professional divers with a commitment to safety, environmental stewardship, and unforgettable underwater experiences. All dive records are maintained to international standards.</p>
+      <div class="certs">
+        <span class="cert-badge">PADI Dive Centre</span>
+        <span class="cert-badge">SSI Certified</span>
+        <span class="cert-badge">DAN Affiliated</span>
+        <span class="cert-badge">ISO 24803</span>
+      </div>
+      <div style="margin-top:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+        <div style="background:rgba(94,200,224,0.12);border:1px solid rgba(94,200,224,0.35);border-radius:6px;padding:0.75rem 1.25rem;">
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:.1em;color:#5ec8e0;margin-bottom:0.2rem;">Mediterranean Dive Council</div>
+          <div style="font-size:1.1rem;font-family:'Playfair Display',serif;color:var(--white);">A+ Regional Safety Rating</div>
+          <div style="font-size:0.75rem;color:rgba(255,255,255,0.45);margin-top:0.15rem;">Certified 2024 — BlueWater Dive Shop</div>
+        </div>
+      </div>
+    </div>
+    <div class="img-side">
+      <p style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.1em;color:#5ec8e0;margin-bottom:1rem;">Certification depth limits</p>
+      <table class="depth-table">
+        <thead>
+          <tr>
+            <th>Certification</th>
+            <th>Max depth</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Open Water Diver</td><td>18 m</td></tr>
+          <tr><td>Advanced Open Water</td><td>30 m</td></tr>
+          <tr><td>Deep Speciality</td><td>40 m</td></tr>
+          <tr><td>Technical Diver</td><td>60 m</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="reviews" id="reviews">
+    <div class="section-tag">What divers say</div>
+    <h2 class="section-title">Trusted by hundreds<br>of satisfied divers</h2>
+    <p class="section-sub">Don't just take our word for it — here's what recent customers had to say about their BlueWater experience.</p>
+
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"The instructors were patient, professional, and clearly passionate about the sea. My Open Water course was the highlight of my holiday."</p>
+        <div class="reviewer">Sophie T. <span>— Open Water, July 2024</span></div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★★</div>
+        <p>"Immaculate equipment, punctual departures, and the reef sites they take you to are genuinely stunning. Will be back next summer."</p>
+        <div class="reviewer">Marco L. <span>— Guided excursion, August 2024</span></div>
+      </div>
+      <div class="review-card">
+        <div class="stars">★★★★☆</div>
+        <p>"Great dive shop overall. The divemaster knew every inch of the local sites and kept the whole group safe without sacrificing fun."</p>
+        <div class="reviewer">Priya M. <span>— Boat charter, June 2024</span></div>
+      </div>
+    </div>
+
+    <a href="/reviews.php" class="reviews-link">Read all reviews →</a>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="contact">
+    <div>
+      <div class="footer-logo">Blue<span>Water</span> Dive Shop</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem;">Mediterranean coast &nbsp;·&nbsp; info@bluewater-dive.local &nbsp;·&nbsp; +34 900 123 456</div>
+    </div>
+    <div>
+      <a href="/reviews.php">Reviews</a>
+      <a href="/about.php">About</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div style="width:100%;font-size:0.75rem;margin-top:0.5rem;">
+      © 2025 BlueWater Dive Shop. All rights reserved. Professional diving services since 2015.
+    </div>
+  </footer>
+
+</body>
+</html>

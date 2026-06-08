@@ -1,0 +1,346 @@
+<?php
+session_start();
+if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
+    header('Location: /login.php');
+    exit;
+}
+$conn = new mysqli('localhost', '{{ portal_db_user }}', '{{ portal_db_password }}', 'bluewater_internal');
+if ($conn->connect_error) {
+    die('Connection failed: ' . $conn->connect_error);
+}
+$results = [];
+$error = '';
+$searched = false;
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['diver_name'])) {
+    $searched = true;
+    $diver_name = $_POST['diver_name'];
+    // VULNERABLE: unparameterised query on dive_records table
+    // UNION-based injection can reach staff table
+    // e.g. ' UNION SELECT id,username,password,role,ssh_password FROM staff-- -
+    $query = "SELECT dive_id, diver_name, certification, max_depth_m, incident_flag 
+              FROM dive_records WHERE diver_name='" . $diver_name . "'";
+    $result = $conn->query($query);
+    if ($result === false) {
+        // Errors visible to client - aids enumeration
+        $error = 'Query error: ' . $conn->error;
+    } else {
+        while ($row = $result->fetch_assoc()) {
+            $results[] = $row;
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueWater Staff Portal &mdash; Dive Records</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy:  #0a2342;
+      --ocean: #1a5f7a;
+      --aqua:  #2196b0;
+      --coral: #e07b54;
+      --white: #ffffff;
+      --text:  #1c2a38;
+      --muted: #5a6e7f;
+      --bg:    #f0f4f7;
+      --border: rgba(26,95,122,0.18);
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    /* ── TOP BAR ── */
+    .topbar {
+      background: var(--navy);
+      padding: 0 2rem;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .topbar-logo {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.02em;
+    }
+    .topbar-logo span { color: #5ec8e0; }
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    .topbar-tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .topbar-logout {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 0.25rem 0.7rem;
+      border-radius: 3px;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .topbar-logout:hover { color: #5ec8e0; border-color: rgba(94,200,224,0.4); }
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      max-width: 960px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+    /* ── PAGE TITLE ── */
+    .page-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--navy);
+      margin-bottom: 0.2rem;
+    }
+    .page-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 1.75rem;
+    }
+    /* ── SEARCH CARD ── */
+    .search-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .search-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      flex: 1;
+      min-width: 200px;
+    }
+    .search-group label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--navy);
+    }
+    .search-group input {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.55rem 0.8rem;
+      transition: border-color 0.2s;
+    }
+    .search-group input:focus {
+      outline: none;
+      border-color: var(--aqua);
+      background: var(--white);
+    }
+    .btn-search {
+      background: var(--ocean);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      padding: 0.55rem 1.4rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-search:hover { background: var(--navy); }
+    /* ── ERROR ── */
+    .error-msg {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-radius: 4px;
+      color: #b91c1c;
+      font-size: 0.82rem;
+      font-family: 'DM Mono', monospace;
+      padding: 0.65rem 0.9rem;
+      margin-bottom: 1.25rem;
+      word-break: break-all;
+    }
+    /* ── RESULTS ── */
+    .results-header {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.6rem;
+    }
+    .results-table-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    thead {
+      background: var(--navy);
+    }
+    thead th {
+      color: rgba(255,255,255,0.75);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 0.7rem 1rem;
+      text-align: left;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f5f9fc; }
+    tbody td {
+      padding: 0.7rem 1rem;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .mono {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.2rem 0.55rem;
+      border-radius: 3px;
+    }
+    .badge-ok {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .badge-incident {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .no-results {
+      padding: 2.5rem 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    /* ── PAGE FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,0.3);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 0.9rem;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-logo">Blue<span>Water</span> Dive Shop</div>
+    <div class="topbar-right">
+      <div class="topbar-tag">Staff Portal &mdash; Internal Use Only</div>
+      <a href="/login.php" class="topbar-logout">Sign out</a>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div class="page-title">Dive Record Search</div>
+    <div class="page-sub">Search the dive log database by diver name. Results show published certification records.</div>
+
+    <div class="search-card">
+      <form method="POST" style="display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap;width:100%;">
+        <div class="search-group">
+          <label for="diver_name">Diver name</label>
+          <input type="text" id="diver_name" name="diver_name"
+                 placeholder="e.g. Jane Smith"
+                 value="<?= isset($_POST['diver_name']) ? htmlspecialchars($_POST['diver_name']) : '' ?>" />
+        </div>
+        <button type="submit" class="btn-search">Search records</button>
+      </form>
+    </div>
+
+    <?php if ($error): ?>
+      <div class="error-msg"><?= $error ?></div>
+    <?php endif; ?>
+
+    <?php if ($searched): ?>
+      <div class="results-header">
+        <?= count($results) ?> result<?= count($results) !== 1 ? 's' : '' ?> found
+      </div>
+      <div class="results-table-wrap">
+        <?php if ($results): ?>
+          <table>
+            <thead>
+              <tr>
+                <th>Dive ID</th>
+                <th>Diver</th>
+                <th>Certification</th>
+                <th>Max Depth</th>
+                <th>Incident</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($results as $row): ?>
+              <tr>
+                <td class="mono"><?= htmlspecialchars($row['dive_id']) ?></td>
+                <td><?= htmlspecialchars($row['diver_name']) ?></td>
+                <td><?= htmlspecialchars($row['certification']) ?></td>
+                <td><?= htmlspecialchars($row['max_depth_m']) ?>m</td>
+                <td>
+                  <?php if ($row['incident_flag']): ?>
+                    <span class="badge badge-incident">Incident</span>
+                  <?php else: ?>
+                    <span class="badge badge-ok">Clear</span>
+                  <?php endif; ?>
+                </td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        <?php else: ?>
+          <div class="no-results">No records found for that diver name.</div>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
+  </div>
+
+  <footer>
+    &copy; 2025 BlueWater Dive Shop &mdash; Internal systems
+  </footer>
+
+</body>
+</html>

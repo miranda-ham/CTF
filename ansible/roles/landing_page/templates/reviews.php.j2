@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueWater - Customer Reviews</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script>
+    // VULNERABILITY: validation is client-side only
+    // bypassed by disabling JavaScript or using curl directly
+    function validateUpload() {
+      var file = document.getElementById('photo').value;
+      var ext = file.split('.').pop().toLowerCase();
+      var allowed = ['jpg', 'jpeg', 'png', 'gif'];
+      if (allowed.indexOf(ext) === -1) {
+        alert('Only image files are allowed (jpg, jpeg, png, gif)');
+        return false;
+      }
+      return true;
+    }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:  #0a2342;
+      --ocean: #1a5f7a;
+      --aqua:  #2196b0;
+      --foam:  #e8f4f8;
+      --sand:  #f5f0e8;
+      --coral: #e07b54;
+      --white: #ffffff;
+      --text:  #1c2a38;
+      --muted: #5a6e7f;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      height: 68px;
+      background: rgba(10, 35, 66, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-logo span { color: #5ec8e0; }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #5ec8e0; }
+
+    .nav-cta {
+      background: var(--coral);
+      color: var(--white) !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: 4px;
+      font-weight: 500 !important;
+    }
+
+    .nav-cta:hover { background: #c96840; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(160deg, #0a2342 0%, #0d3d5c 45%, #1a5f7a 100%);
+      padding: 7rem 3rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 58px,
+        rgba(255,255,255,0.025) 58px, rgba(255,255,255,0.025) 60px
+      );
+      pointer-events: none;
+    }
+
+    .page-header-badge {
+      display: inline-block;
+      background: rgba(94,200,224,0.15);
+      border: 1px solid rgba(94,200,224,0.4);
+      color: #5ec8e0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 2px;
+      margin-bottom: 1rem;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-header p {
+      color: rgba(255,255,255,0.65);
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 480px;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 4rem 3rem 5rem; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 780px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── UPLOAD FORM ── */
+    .form-card {
+      background: var(--sand);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+
+    .section-tag {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group { margin-bottom: 1.25rem; }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--navy);
+      margin-bottom: 0.4rem;
+    }
+
+    .form-group textarea,
+    .form-group input[type="file"] {
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--white);
+      border: 1px solid rgba(26,95,122,0.2);
+      border-radius: 4px;
+      padding: 0.65rem 0.85rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group textarea:focus,
+    .form-group input[type="file"]:focus {
+      outline: none;
+      border-color: var(--aqua);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 110px; }
+
+    .form-group input[type="file"] { padding: 0.5rem 0.85rem; cursor: pointer; }
+
+    .file-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    .btn-submit {
+      display: inline-block;
+      background: var(--coral);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.7rem 1.75rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit:hover { background: #c96840; transform: translateY(-1px); }
+
+    .upload-msg {
+      background: rgba(33,150,176,0.1);
+      border-left: 3px solid var(--aqua);
+      color: var(--ocean);
+      font-size: 0.9rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 1.25rem;
+    }
+
+    .upload-err {
+      background: rgba(224,123,84,0.1);
+      border-left: 3px solid var(--coral);
+      color: #b05030;
+      font-size: 0.9rem;
+      padding: 0.75rem 1rem;
+      border-radius: 0 4px 4px 0;
+      margin-bottom: 1.25rem;
+    }
+
+    /* ── REVIEWS LIST ── */
+    .reviews-col h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 1.5rem;
+    }
+
+    .review-card {
+      background: var(--white);
+      border: 1px solid rgba(26,95,122,0.12);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: transform 0.2s;
+    }
+
+    .review-card:hover { transform: translateY(-2px); }
+
+    .stars { color: #e8a838; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+    .review-card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.65;
+      font-style: italic;
+      margin-bottom: 0.75rem;
+    }
+
+    .reviewer { font-weight: 500; font-size: 0.85rem; color: var(--navy); }
+    .reviewer span { font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #061525;
+      color: rgba(255,255,255,0.45);
+      padding: 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.1rem;
+    }
+
+    .footer-logo span { color: #5ec8e0; }
+
+    footer a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+
+    footer a:hover { color: #5ec8e0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/index.html" class="nav-logo">Blue<span>Water</span> Dive Shop</a>
+    <ul class="nav-links">
+      <li><a href="/index.html#services">Services</a></li>
+      <li><a href="/index.html#about">About</a></li>
+      <li><a href="/reviews.php">Reviews</a></li>
+      <li><a href="/index.html#contact">Contact</a></li>
+      <li><a href="#" class="nav-cta">Book a Dive</a></li>
+    </ul>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-badge">Customer Reviews</div>
+    <h1>Diver Experiences</h1>
+    <p>Read what our customers have to say, and share a photo from your own dive with us.</p>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="two-col">
+
+      <!-- UPLOAD FORM -->
+      <div class="form-card">
+        <div class="section-tag">Share your experience</div>
+        <h2>Leave a Review</h2>
+
+        <?php
+        // No server-side file type validation
+        // INTENTIONALLY VULNERABLE: CWE-434
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
+          $filename = basename($_FILES['photo']['name']);
+          $dest = '/var/www/html/uploads/' . $filename;
+          if (move_uploaded_file($_FILES['photo']['tmp_name'], $dest)) {
+            echo '<div class="upload-msg">Thank you! Your photo has been uploaded.</div>';
+          } else {
+            echo '<div class="upload-err">Upload failed. Please try again.</div>';
+          }
+        }
+        ?>
+
+        <form method="POST" enctype="multipart/form-data" onsubmit="return validateUpload()">
+          <div class="form-group">
+            <label for="review">Your review</label>
+            <textarea id="review" name="review" placeholder="Tell us about your dive experience..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="photo">Upload a dive photo</label>
+            <input type="file" id="photo" name="photo" />
+            <p class="file-hint">Accepted formats: jpg, jpeg, png, gif</p>
+          </div>
+          <button type="submit" class="btn-submit">Submit Review</button>
+        </form>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="reviews-col">
+        <div class="section-tag">What divers say</div>
+        <h2>Recent Reviews</h2>
+
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p>"Amazing experience from start to finish. The instructors were calm, professional, and clearly love what they do."</p>
+          <div class="reviewer">Maria S. <span>— Open Water, June 2024</span></div>
+        </div>
+
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p>"Best dive shop in the region, without a doubt. The guided reef excursion was absolutely breathtaking."</p>
+          <div class="reviewer">James K. <span>— Reef excursion, July 2024</span></div>
+        </div>
+
+        <div class="review-card">
+          <div class="stars">★★★★☆</div>
+          <p>"Professional staff and great equipment. Everything was well-maintained and the briefing was thorough."</p>
+          <div class="reviewer">Lena P. <span>— Equipment hire, August 2024</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-logo">Blue<span>Water</span> Dive Shop</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem;">Mediterranean coast &nbsp;·&nbsp; info@bluewater-dive.local &nbsp;·&nbsp; +34 900 123 456</div>
+    </div>
+    <div>
+      <a href="/reviews.php">Reviews</a>
+      <a href="/about.php">About</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div style="width:100%;font-size:0.75rem;margin-top:0.5rem;">
+      © 2025 BlueWater Dive Shop. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>

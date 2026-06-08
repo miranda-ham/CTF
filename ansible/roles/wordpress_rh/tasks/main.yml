@@ -1,0 +1,57 @@
+- name: Create WordPress-looking directory structure
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  loop:
+    - /var/www/html/wp-admin
+    - /var/www/html/wp-content
+    - /var/www/html/wp-content/plugins
+    - /var/www/html/wp-content/themes
+
+- name: Drop static wp-login.php (no backend)
+  copy:
+    dest: /var/www/html/wp-login.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head><title>Log In &lsaquo; BlueWater Dive Shop</title></head>
+      <body>
+      <div id="login">
+        <h1>BlueWater Dive Shop</h1>
+        <form method="post" action="">
+          <label>Username<input type="text" name="log" /></label>
+          <label>Password<input type="password" name="pwd" /></label>
+          <input type="submit" value="Log In" />
+        </form>
+      </div>
+      </body>
+      </html>
+
+- name: Drop wp-admin index (redirect-looking page)
+  copy:
+    dest: /var/www/html/wp-admin/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    content: |
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta http-equiv="refresh" content="0;url=/wp-login.php">
+      </head>
+      <body>Redirecting...</body>
+      </html>
+
+- name: Drop dummy plugin directory marker
+  copy:
+    dest: /var/www/html/wp-content/plugins/index.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    content: "<?php // Silence is golden."

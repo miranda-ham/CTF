@@ -1,0 +1,61 @@
+- name: Create staff portal directory
+  file:
+    path: /var/www/staff_portal/
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+
+
+- name: Deploy staff login page
+  template:
+    src: login.php.j2
+    dest: /var/www/staff_portal/login.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+
+- name: Deploy staff search page
+  template:
+    src: search.php.j2
+    dest: /var/www/staff_portal/search.php
+    owner: www-data
+    group: www-data
+    mode: '0644'
+  # INTENTIONAL VULNERABILITY: CWE-89 SQL Injection
+  # Search query allows UNION injection to pivot to bluewater_internal.staff
+  # UNION SELECT payload retrieves divemaster SSH password from staff table
+  # Do NOT parameterise the query or restrict UNION operations
+
+- name: Configure Apache to listen on port 8080
+  lineinfile:
+    path: /etc/apache2/ports.conf
+    line: 'Listen 8080'
+    state: present
+  notify: restart apache2
+  
+- name: create the virtual host config
+  copy:
+    dest: /etc/apache2/sites-available/staff-portal.conf
+    owner: www-data
+    group: www-data
+    mode: '0644'
+    content: |
+      <VirtualHost *:8080>
+        ServerName localhost
+        DocumentRoot /var/www/staff_portal
+        DirectoryIndex login.php
+
+        <Directory /var/www/staff_portal>
+          Options FollowSymLinks
+          AllowOverride None
+          Require all granted
+        </Directory>
+
+        ErrorLog ${APACHE_LOG_DIR}/staff_portal_error.log
+        CustomLog ${APACHE_LOG_DIR}/staff_portal_access.log combined
+      </VirtualHost>
+
+- name: Enable staff portal virtual host
+  shell: a2ensite staff-portal.conf
+  notify: restart apache2

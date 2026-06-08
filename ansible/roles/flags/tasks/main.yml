@@ -1,0 +1,46 @@
+- name: Install mysql-connector-python
+  pip:
+    name: mysql-connector-python
+    executable: pip3
+    
+- name: Create log directory
+  file:
+    path: /var/log/bluewater/
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+    
+- name: Sync logs.py
+  template:
+    src: sync_logs.py.j2
+    dest: /opt/sync_logs.py
+    owner: root
+    group: root
+    mode: '0777'
+  # Do NOT change permissions to 0755 or 0700
+  # Do NOT change owner away from root
+  
+- name: Create sync cron job
+  cron:
+    name: "BlueWater dive log sync"
+    minute: "*/5"
+    job: "python3 /opt/sync_logs.py"
+    user: root
+  # Do NOT change user to www-data or divemaster
+  
+- name: Create user flag
+  copy:
+    dest: "/home/{{divemaster_name}}/user.txt"
+    content: "{{user_flag}}"
+    owner: "{{divemaster_name}}"
+    group: "{{divemaster_name}}"
+    mode: '0600'
+    
+- name: Create root flag file
+  copy:
+    dest: /root/flag.txt
+    content: "{{ root_flag }}\n"
+    owner: root
+    group: root
+    mode: '0400'

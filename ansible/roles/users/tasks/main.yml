@@ -1,0 +1,35 @@
+
+- name: Create divemaster account
+  user:
+    name: "{{ divemaster_name }}"
+    password: "{{ divemaster_password | password_hash('sha512') }}"
+    shell: /bin/bash
+    createhome: yes
+    state: present
+    # TARGET ACCOUNT: divemaster SSH credentials are recovered via SQL injection
+    # on port 8080 staff portal. Password stored in plaintext in bluewater_internal.staff table.
+
+    
+- name:  Create .ssh directory for divemaster
+  file:
+    path: "/home/{{ divemaster_name }}/.ssh"
+    state: directory
+    owner: "{{ divemaster_name }}"
+    group: "{{ divemaster_name }}"
+    mode: '0700'
+    
+- name: Ensure root has a secure password
+  user:
+    name: root
+    password: "{{ 'CTF_root_P@ssw0rd_unguessable' | password_hash('sha512') }}"
+    
+- name: Create shopowner account (nologin)
+  user:
+    name: "{{ shopowner_name }}"
+    password: "{{ shopowner_password | password_hash('sha512') }}"
+    shell: /usr/sbin/nologin
+    create_home: yes
+  # RABBIT HOLE: shopowner credentials are found in /var/www/html/admin_notes.txt
+  # SSH with these credentials fails immediately - nologin shell drops connection
+  # Do NOT change shell to /bin/bash
+

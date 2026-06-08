@@ -1,0 +1,60 @@
+# Base system configuration
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600 # Cache valid for 1 hour (speeds up re-runs)
+- name: Set timezone to UTC
+  timezone:
+    name: UTC
+    
+- name: Install essential packages
+  apt:
+    name:
+      - curl
+      - wget
+      - vim
+      - net-tools
+      - unzip
+      - git
+      - python3-pip
+      - auditd
+    state: present
+- name: Install passlib (needed for password_hash filter)
+  pip:
+    name: passlib
+    executable: pip3
+- name: Disable unattended upgrades
+  systemd:
+    name: unattended-upgrades
+    enabled: no
+    state: stopped
+  ignore_errors: yes
+# Prevents automatic patching of vulnerable software if necessary
+- name: Disable automatic apt upgrades
+  lineinfile:
+    path: /etc/apt/apt.conf.d/20auto-upgrades
+    regexp: '^APT::Periodic::Unattended-Upgrade'
+    line: 'APT::Periodic::Unattended-Upgrade "0";'
+    create: yes
+- name: Enable and start auditd
+  systemd:
+    name: auditd
+    state: started
+    enabled: yes
+- name: Disable dynamic MOTD scripts
+  shell: |
+    chmod -x /etc/update-motd.d/*
+  ignore_errors: yes
+    
+- name: Set MOTD (Message of the Day)
+  copy:
+    dest: /etc/motd
+    content: |
+      +----------------------------------------+
+      | BlueWater Diveshop - Staff Systems     |
+      |                                        |
+      | Authorized access only.                |
+      | All activity is logged.                |
+      +----------------------------------------+
+# Sets the tone, reinforces the narrative
+# Players see this when they SSH in as divemaster

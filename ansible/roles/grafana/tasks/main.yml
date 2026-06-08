@@ -1,0 +1,56 @@
+- name: Download Grafana
+  get_url:
+    url: https://dl.grafana.com/oss/release/grafana_8.2.0_amd64.deb
+    dest: /tmp/grafana_8.2.0_amd64.deb
+    
+- name: Install Grafana 8.2.0
+  apt:
+    deb: /tmp/grafana_8.2.0_amd64.deb
+    state: present
+    
+- name: Pin Grafana version to prevent auto-upgrade
+  shell: apt-mark hold grafana
+  ignore_errors: yes
+  # INTENTIONAL: pinned to 8.2.0 - CVE-2021-43798 patched in 8.2.1
+  # Do NOT upgrade Grafana
+
+- name: Configure Grafana.ini
+  copy:
+    dest: /etc/grafana/grafana.ini
+    owner: grafana
+    group: grafana
+    mode: '0640'
+    content: |
+      [server]
+      http_addr = 127.0.0.1
+      http_port = 3000
+      domain = localhost
+
+      [database]
+      type = mysql
+      host = 127.0.0.1:3306
+      name = grafana
+      user = {{ grafana_db_user }}
+      password = {{ grafana_db_password }}
+
+      [security]
+      admin_user = admin
+      admin_password = {{ grafana_admin_password }}
+
+      [bluewater_staff_portal]
+      url = http://localhost:8080
+      user = {{ portal_admin_user }}
+      password = {{ portal_admin_password }}
+  notify: restart grafana-server
+  # INTENTIONAL: grafana.ini contains two sets of credentials intentionally
+  # grafana_db_password: gives MySQL read access to dive_logs (falsified records)
+  # portal_admin_password: gives login access to port 8080 staff portal
+  # Both are exposed when player reads this file via CVE-2021-43798
+  # Do NOT remove credentials from grafana.ini
+  # Do NOT change http_addr to 0.0.0.0 - Grafana must stay internal only
+- name: Start and enable Grafana
+  systemd:
+    name: grafana-server
+    state: started
+    enabled: yes
+      

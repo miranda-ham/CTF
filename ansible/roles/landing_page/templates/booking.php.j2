@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book a Dive - BlueWater Dive Shop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:  #0a2342;
+      --ocean: #1a5f7a;
+      --aqua:  #2196b0;
+      --foam:  #e8f4f8;
+      --sand:  #f5f0e8;
+      --coral: #e07b54;
+      --white: #ffffff;
+      --text:  #1c2a38;
+      --muted: #5a6e7f;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      background: var(--white);
+      font-size: 16px;
+      line-height: 1.65;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 3rem;
+      height: 68px;
+      background: rgba(10, 35, 66, 0.96);
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--white);
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-logo span { color: #5ec8e0; }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: #5ec8e0; }
+
+    .nav-cta {
+      background: var(--coral);
+      color: var(--white) !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: 4px;
+      font-weight: 500 !important;
+    }
+
+    .nav-cta:hover { background: #c96840; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: linear-gradient(160deg, #0a2342 0%, #0d3d5c 45%, #1a5f7a 100%);
+      padding: 7rem 3rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 58px,
+        rgba(255,255,255,0.025) 58px, rgba(255,255,255,0.025) 60px
+      );
+      pointer-events: none;
+    }
+
+    .page-header-badge {
+      display: inline-block;
+      background: rgba(94,200,224,0.15);
+      border: 1px solid rgba(94,200,224,0.4);
+      color: #5ec8e0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.3rem 0.9rem;
+      border-radius: 2px;
+      margin-bottom: 1rem;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-header p {
+      color: rgba(255,255,255,0.65);
+      font-size: 1rem;
+      font-weight: 300;
+      max-width: 480px;
+    }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 4rem 3rem 5rem;
+    }
+
+    /* ── CONFIRMATION ── */
+    .confirm-box {
+      background: var(--foam);
+      border-left: 4px solid var(--aqua);
+      border-radius: 0 8px 8px 0;
+      padding: 2rem 2rem 2rem 1.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .confirm-box h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .confirm-box p { color: var(--muted); font-size: 0.95rem; }
+
+    .btn-back {
+      display: inline-block;
+      margin-top: 1.5rem;
+      background: var(--navy);
+      color: var(--white);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.65rem 1.5rem;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+
+    .btn-back:hover { background: var(--ocean); }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--sand);
+      border-radius: 8px;
+      padding: 2.5rem;
+    }
+
+    .section-tag {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--aqua);
+      margin-bottom: 0.5rem;
+    }
+
+    .form-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--navy);
+      margin-bottom: 2rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--navy);
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--white);
+      border: 1px solid rgba(26,95,122,0.2);
+      border-radius: 4px;
+      padding: 0.65rem 0.85rem;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--aqua);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 110px; }
+
+    .btn-submit {
+      display: inline-block;
+      background: var(--coral);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1.75rem;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-submit:hover { background: #c96840; transform: translateY(-1px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #061525;
+      color: rgba(255,255,255,0.45);
+      padding: 2.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      color: rgba(255,255,255,0.7);
+      font-size: 1.1rem;
+    }
+
+    .footer-logo span { color: #5ec8e0; }
+
+    footer a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+
+    footer a:hover { color: #5ec8e0; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/index.html" class="nav-logo">Blue<span>Water</span> Dive Shop</a>
+    <ul class="nav-links">
+      <li><a href="/index.html#services">Services</a></li>
+      <li><a href="/index.html#about">About</a></li>
+      <li><a href="/reviews.php">Reviews</a></li>
+      <li><a href="/index.html#contact">Contact</a></li>
+      <li><a href="/booking.php" class="nav-cta">Book a Dive</a></li>
+    </ul>
+  </nav>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <div class="page-header-badge">Reservations</div>
+    <h1>Book a Dive</h1>
+    <p>Fill in your details below and we'll confirm your booking within 24 hours.</p>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
+
+      <div class="confirm-box">
+        <h2>Booking request received</h2>
+        <p>Thanks! We'll be in touch shortly to confirm your dive. Keep an eye on your inbox.</p>
+        <a href="/booking.php" class="btn-back">Make another booking</a>
+      </div>
+
+    <?php else: ?>
+
+      <div class="form-card">
+        <div class="section-tag">Reserve your spot</div>
+        <h2>Dive Booking Request</h2>
+        <form method="post" action="">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name">Full name</label>
+              <input type="text" id="name" name="name" placeholder="Jane Smith" required />
+            </div>
+            <div class="form-group">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" placeholder="jane@example.com" required />
+            </div>
+            <div class="form-group">
+              <label for="date">Preferred dive date</label>
+              <input type="date" id="date" name="date" required />
+            </div>
+            <div class="form-group">
+              <label for="service">Service</label>
+              <select id="service" name="service">
+                <option value="">Select a service...</option>
+                <option value="open-water">Open Water Certification</option>
+                <option value="advanced">Advanced Open Water</option>
+                <option value="guided">Guided Reef Excursion</option>
+                <option value="boat">Boat Charter</option>
+                <option value="equipment">Equipment Hire</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label for="comments">Additional comments</label>
+              <textarea id="comments" name="comments" placeholder="Any questions, special requirements, or certification level..."></textarea>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Request Booking</button>
+        </form>
+      </div>
+
+    <?php endif; ?>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-logo">Blue<span>Water</span> Dive Shop</div>
+      <div style="margin-top:0.5rem;font-size:0.8rem;">Mediterranean coast &nbsp;·&nbsp; info@bluewater-dive.local &nbsp;·&nbsp; +34 900 123 456</div>
+    </div>
+    <div>
+      <a href="/reviews.php">Reviews</a>
+      <a href="/about.php">About</a>
+      <a href="#">Privacy</a>
+    </div>
+    <div style="width:100%;font-size:0.75rem;margin-top:0.5rem;">
+      © 2025 BlueWater Dive Shop. All rights reserved.
+    </div>
+  </footer>
+
+</body>
+</html>
