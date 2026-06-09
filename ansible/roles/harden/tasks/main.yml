@@ -11,6 +11,10 @@
     - { direction: incoming, policy: deny }
     - { direction: outgoing, policy: allow }
     
+- name: Enable UFW logging
+  community.general.ufw:
+    logging: 'on'
+    
 - name: Allow SSH through firewall
   community.general.ufw:
     rule: allow

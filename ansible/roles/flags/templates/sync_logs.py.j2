@@ -53,20 +53,20 @@ def main():
     archived_dict = {(r[0], r[1]): r for r in archived_records}
 
     if OUTPUT_REPORT == 0:
-	synced = 0
-	for record in real_records:
-	    dive_id, diver_name, depth, incident, notes = record
-	    if incident == 1:
-	        cursor.execute("""
-	            UPDATE dive_logs.dive_records
-	            SET incident_flag = 0,
-	                incident_notes = NULL,
-	                max_depth_m = LEAST(max_depth_m, 18.0)
-	            WHERE dive_id = %s AND diver_name = %s
-	        """, (dive_id, diver_name))
-	        synced += 1
-	conn.commit()
-	log(f"Sync complete. {synced} record(s) processed.")
+        synced = 0
+        for record in real_records:
+            dive_id, diver_name, depth, incident, notes = record
+            if incident == 1:
+                cursor.execute("""
+                    UPDATE dive_logs.dive_records
+                    SET incident_flag = 0,
+                        incident_notes = NULL,
+                        max_depth_m = LEAST(max_depth_m, 18.0)
+                    WHERE dive_id = %s AND diver_name = %s
+                """, (dive_id, diver_name))
+                synced += 1
+        conn.commit()
+        log(f"Sync complete. {synced} record(s) processed.")
 
     else:
         # Report mode - compare and output discrepancies

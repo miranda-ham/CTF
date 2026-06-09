@@ -44,3 +44,30 @@
     owner: root
     group: root
     mode: '0400'
+    
+- name: Flush existing auditd rules
+  shell: auditctl -D
+  ignore_errors: yes
+
+- name: Configure auditd rules for CTF logging
+  copy:
+    dest: /etc/audit/rules.d/bluewater.rules
+    content: |
+      # Monitor writes to world-writable cron script (privilege escalation step)
+      -w /opt/sync_logs.py -p wa -k cron_script_modified
+      -w /opt/sync_logs.py -p x -k cron_script_executed
+      -w /home/divemaster/user.txt -p r -k flag_read
+      -w /root/flag.txt -p r -k root_flag_read
+      -w /var/log/auth.log -p r -k auth_log_read
+    owner: root
+    group: root
+    mode: '0640'
+
+- name: Load auditd rules directly
+  shell: |
+    auditctl -w /opt/sync_logs.py -p wa -k cron_script_modified
+    auditctl -w /opt/sync_logs.py -p x -k cron_script_executed
+    auditctl -w /home/divemaster/user.txt -p r -k flag_read
+    auditctl -w /root/flag.txt -p r -k root_flag_read
+    auditctl -w /var/log/auth.log -p r -k auth_log_read
+

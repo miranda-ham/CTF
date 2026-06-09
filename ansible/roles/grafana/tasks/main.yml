@@ -25,6 +25,7 @@
       http_addr = 127.0.0.1
       http_port = 3000
       domain = localhost
+      router_logging = true
 
       [database]
       type = mysql

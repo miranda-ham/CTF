@@ -3,6 +3,7 @@
   apt:
     update_cache: yes
     cache_valid_time: 3600 # Cache valid for 1 hour (speeds up re-runs)
+    
 - name: Set timezone to UTC
   timezone:
     name: UTC
@@ -19,10 +20,12 @@
       - python3-pip
       - auditd
     state: present
+    
 - name: Install passlib (needed for password_hash filter)
   pip:
     name: passlib
     executable: pip3
+    
 - name: Disable unattended upgrades
   systemd:
     name: unattended-upgrades
@@ -30,17 +33,20 @@
     state: stopped
   ignore_errors: yes
 # Prevents automatic patching of vulnerable software if necessary
+
 - name: Disable automatic apt upgrades
   lineinfile:
     path: /etc/apt/apt.conf.d/20auto-upgrades
     regexp: '^APT::Periodic::Unattended-Upgrade'
     line: 'APT::Periodic::Unattended-Upgrade "0";'
     create: yes
+    
 - name: Enable and start auditd
   systemd:
     name: auditd
     state: started
     enabled: yes
+    
 - name: Disable dynamic MOTD scripts
   shell: |
     chmod -x /etc/update-motd.d/*
