@@ -8,7 +8,6 @@ import mysql.connector
 import sys
 from datetime import datetime
 
-# Set to 1 to output full comparison report instead of syncing
 OUTPUT_REPORT = 0
 
 LOG_FILE = "/var/log/bluewater/sync.log"
@@ -42,7 +41,6 @@ def main():
     """)
     real_records = cursor.fetchall()
 
-    # Get archived records
     cursor.execute("""
         SELECT dive_id, diver_name, max_depth_m, incident_flag, incident_notes
         FROM dive_logs.dive_records
@@ -69,7 +67,6 @@ def main():
         log(f"Sync complete. {synced} record(s) processed.")
 
     else:
-        # Report mode - compare and output discrepancies
         modified_divers = set()
         for record in real_records:
             dive_id, diver_name, real_depth, real_incident, real_notes = record
