@@ -33,7 +33,6 @@ def main():
         log(f"ERROR: Database connection failed: {e}")
         sys.exit(1)
 
-    # Get real records
     cursor.execute("""
         SELECT dive_id, diver_name, max_depth_m, incident_flag, incident_notes
         FROM bluewater_internal.dive_records
