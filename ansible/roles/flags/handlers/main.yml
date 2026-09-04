@@ -1,0 +1,4 @@
+- name: reload systemd and restart auditd
+  shell: |
+    systemctl daemon-reload
+    systemctl restart auditd

@@ -1,0 +1,14 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    range-en:
+      match: { name: "en*" }
+      dhcp4: true
+      dhcp-identifier: mac
+      optional: true
+    range-eth:
+      match: { name: "eth*" }
+      dhcp4: true
+      dhcp-identifier: mac
+      optional: true

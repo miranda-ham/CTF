@@ -1,0 +1,8 @@
+*.ova
+.vagrant/
+cookies.txt
+*.log
+submission.zip
+submission/
+writeup.zip
+logs/
