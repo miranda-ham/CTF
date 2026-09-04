@@ -9,7 +9,7 @@ config.vm.hostname = "deepdive"
 # Network configuration: Host-Only network
 # This creates an isolated network between host and VMs
 # The VM is NOT accessible from the internet
-config.vm.network "private_network", ip: "192.168.56.101"
+config.vm.network "private_network", type: "dhcp"
 # VirtualBox-specific settings
 config.vm.provider "virtualbox" do |vb|
 # VM display name in VirtualBox Manager
@@ -21,7 +21,7 @@ vb.cpus = 2
 # Don't show VirtualBox GUI window (headless)
 vb.gui = false
 # Linked clone (faster, uses less disk space)
-vb.linked_clone = true
+vb.linked_clone = false
 end
 # Provisioning: Use ansible_local (runs Ansible INSIDE the VM)
 # This avoids Python/conda conflicts on the host machine

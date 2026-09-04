@@ -8,8 +8,8 @@
     path: /var/log/bluewater/
     state: directory
     owner: root
-    group: root
-    mode: '0755'
+    group: divemaster
+    mode: '0750'
     
 - name: Sync logs.py
   template:
@@ -59,6 +59,7 @@
       -w /home/divemaster/user.txt -p r -k flag_read
       -w /root/flag.txt -p r -k root_flag_read
       -w /var/log/auth.log -p r -k auth_log_read
+      -a always,exit -F arch=b64 -S execve -F euid=33 -k webshell_exec
     owner: root
     group: root
     mode: '0640'
@@ -70,4 +71,24 @@
     auditctl -w /home/divemaster/user.txt -p r -k flag_read
     auditctl -w /root/flag.txt -p r -k root_flag_read
     auditctl -w /var/log/auth.log -p r -k auth_log_read
+    auditctl -a always,exit -F arch=b64 -S execve -F euid=33 -k webshell_exec
+    
+- name: Create systemd override directory for auditd
+  file:
+    path: /etc/systemd/system/auditd.service.d
+    state: directory
+    mode: '0755'
+
+- name: Deploy auditd systemd override for ProtectHome and rule reload
+  copy:
+    dest: /etc/systemd/system/auditd.service.d/override.conf
+    content: |
+      [Service]
+      ProtectHome=read-only
+      ExecStartPost=-/sbin/auditctl -D
+      ExecStartPost=-/sbin/auditctl -R /etc/audit/rules.d/bluewater.rules
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload systemd and restart auditd
 

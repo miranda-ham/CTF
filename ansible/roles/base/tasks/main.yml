@@ -41,6 +41,14 @@
     line: 'APT::Periodic::Unattended-Upgrade "0";'
     create: yes
     
+- name: Deploy DHCP-on-all-interfaces netplan config for range deployment
+  template:
+    src: 99-dhcp-all.yaml.j2
+    dest: /etc/netplan/99-dhcp-all.yaml
+    owner: root
+    group: root
+    mode: '0600'
+    
 - name: Enable and start auditd
   systemd:
     name: auditd
@@ -62,5 +70,10 @@
       | Authorized access only.                |
       | All activity is logged.                |
       +----------------------------------------+
+      
+- name: Disable cloud-init after provisioning (range export prep)
+  file:
+    path: /etc/cloud/cloud-init.disabled
+    state: touch
 # Sets the tone, reinforces the narrative
 # Players see this when they SSH in as divemaster

